@@ -1,0 +1,88 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+
+<mapper namespace="com.taosdata.example.springbootdemo.dao.GasInfoMapper">
+    <resultMap id="BaseResultMap" type="com.taosdata.example.springbootdemo.domain.GasInfo">
+        <id column="ts" jdbcType="TIMESTAMP" property="ts"/>
+        <result column="id" jdbcType="NCHAR" property="id"/>
+        <result column="deviceid" jdbcType="NCHAR" property="deviceId"/>
+        <result column="roomid" jdbcType="NCHAR" property="roomId"/>
+        <result column="position" jdbcType="NCHAR" property="position"/>
+        <result column="gvalue" jdbcType="FLOAT" property="gValue" />
+        <result column="status" jdbcType="NCHAR" property="status" />
+        <result column="reporttime" jdbcType="TIMESTAMP" property="reportTime"/>
+        <result column="number" jdbcType="NCHAR" property="number"/>
+        <result column="workshop" jdbcType="NCHAR" property="workShop"/>
+        <result column="host" jdbcType="FLOAT" property="host" />
+        <result column="channel" jdbcType="NCHAR" property="channel" />
+        <result column="gastype" jdbcType="TIMESTAMP" property="gasType"/>
+    </resultMap>
+
+
+    <select id="selectList" resultMap="BaseResultMap">
+        select * from gas.${params.deviceId}  where reporttime &gt;=#{params.startTime} and reporttime &lt;=#{params.endTime} order by ts desc
+    </select>
+
+    <select id="selectListLimit" resultMap="BaseResultMap">
+        select LAST(reporttime) as reporttime,ts,deviceid,roomid,position,gvalue,status
+        from  gas.${params.deviceId}
+        where reporttime &gt;=#{params.startTime} and reporttime &lt;=#{params.endTime}
+        interval(${params.interval})  order by ts desc;
+    </select>
+
+    <insert id="insertGasInfo">
+        insert into gas.${gasInfo.deviceId} using gas.gasinfo (groupId) TAGS (2)
+        (ts, id, deviceid, roomid, gvalue,position,status,reporttime,number,workshop,host,channel,gastype)
+        values
+        (
+         #{gasInfo.ts},
+         #{gasInfo.id},
+         #{gasInfo.deviceId},
+         #{gasInfo.roomId},
+         #{gasInfo.gValue},
+         #{gasInfo.position},
+         #{gasInfo.status},
+         #{gasInfo.reportTime},
+         #{gasInfo.number},
+         #{gasInfo.workShop},
+         #{gasInfo.host},
+         #{gasInfo.channel},
+         #{gasInfo.gasType}
+         )
+    </insert>
+
+    <update id="createSuperTable">
+        create table if not exists gas.gasinfo
+        (
+            ts
+            timestamp,
+            id
+            nchar(64),
+            deviceid
+            nchar(64),
+            roomid
+            nchar(64),
+            position
+            nchar(64),
+            gvalue
+            float,
+            status
+            nchar(64),
+            reporttime
+            timestamp,
+            number
+            nchar(64),
+            workshop
+            nchar(64),
+            host
+            nchar(64),
+            channel
+            nchar(64),
+            gastype
+            nchar(64)
+            ) tags
+        (location nchar(64), groupId int)
+    </update>
+
+
+</mapper>

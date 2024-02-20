@@ -1,0 +1,105 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+
+<mapper namespace="com.taosdata.example.springbootdemo.dao.VarInfoMapper">
+
+    <resultMap id="BaseResultMap" type="com.taosdata.example.springbootdemo.domain.VarInfo">
+        <id column="ts" jdbcType="TIMESTAMP" property="ts"/>
+        <result column="temperature" jdbcType="FLOAT" property="temperature"/>
+        <result column="humidity" jdbcType="FLOAT" property="humidity"/>
+        <result column="bytes" jdbcType="BINARY" property="bytes" />
+    </resultMap>
+
+
+    <select id="lastOne" resultType="java.util.Map">
+        select last_row(ts) as ts, last_row(temperature) as temperature, last_row(humidity) as humidity, last_row(note) as note,last_row(location) as location , last_row(groupid) as groupid from gas.weather;
+    </select>
+
+    <update id="dropDB">
+        drop
+        database if exists gas
+    </update>
+
+    <update id="createDB">
+        create
+        database if not exists gas
+    </update>
+
+    <update id="createSuperTable">
+        create table if not exists gas.varinfo
+        (
+            ts
+            timestamp,
+            id
+            nchar(64),
+            systemname
+            nchar(64),
+            varname
+            nchar(64),
+            varremark
+            nchar(64)
+        )
+
+    </update>
+
+    <update id="createTable" parameterType="com.taosdata.example.springbootdemo.domain.Weather">
+        create table if not exists gas.t#{groupId} using gas.weather tags
+        (
+            #{location},
+            #{groupId}
+        )
+    </update>
+
+<!--    <select id="select" resultMap="BaseResultMap">-->
+<!--        select * from test.weather order by ts desc-->
+<!--        <if test="limit != null">-->
+<!--            limit #{limit,jdbcType=BIGINT}-->
+<!--        </if>-->
+<!--        <if test="offset != null">-->
+<!--            offset #{offset,jdbcType=BIGINT}-->
+<!--        </if>-->
+<!--    </select>-->
+
+    <insert id="insert" parameterType="com.taosdata.example.springbootdemo.domain.VarInfo">
+        insert into gas.varinfo (ts, id, systemname, varname, varremark)
+        values (#{ts}, #{id}, #{systemName}, #{varName}, #{varRemark})
+    </insert>
+
+    <select id="getSubTables" resultType="String">
+        select tbname
+        from gas.weather
+    </select>
+
+    <select id="count" resultType="int">
+        select count(*)
+        from gas.weather
+    </select>
+
+    <resultMap id="avgResultSet" type="com.taosdata.example.springbootdemo.domain.Weather">
+        <id column="ts" jdbcType="TIMESTAMP" property="ts"/>
+        <result column="avg(temperature)" jdbcType="FLOAT" property="temperature"/>
+        <result column="avg(humidity)" jdbcType="FLOAT" property="humidity"/>
+    </resultMap>
+
+    <select id="avg" resultMap="avgResultSet">
+        select avg(temperature), avg(humidity)
+        from gas.weather interval(1m)
+    </select>
+
+    <select id="testTable" resultMap="BaseResultMap">
+        select * from ${tableName}
+    </select>
+    <select id="select" resultMap="BaseResultMap">
+        select * from varinfo order by ts asc
+    </select>
+
+    <select id="getVarInfoList" resultMap="BaseResultMap">
+        select * from gas.varinfo  where  varname like '%${name}%' order by ts desc
+        <if test="limit != null">
+            limit #{limit,jdbcType=BIGINT}
+        </if>
+        <if test="offset != null">
+            offset #{offset,jdbcType=BIGINT}
+        </if>
+    </select>
+</mapper>

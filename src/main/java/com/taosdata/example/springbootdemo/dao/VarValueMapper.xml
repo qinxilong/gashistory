@@ -1,0 +1,100 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+
+<mapper namespace="com.taosdata.example.springbootdemo.dao.VarValueMapper">
+
+    <resultMap id="BaseResultMap" type="com.taosdata.example.springbootdemo.domain.VarValue">
+        <id column="ts" jdbcType="TIMESTAMP" property="ts"/>
+        <result column="id" jdbcType="BIGINT" property="id"/>
+        <result column="vvalue" jdbcType="FLOAT" property="vvalue"/>
+        <result column="vid" jdbcType="NCHAR" property="vid" />
+    </resultMap>
+
+    <select id="lastOne" resultType="java.util.Map">
+        select last_row(ts) as ts, last_row(temperature) as temperature, last_row(humidity) as humidity, last_row(note) as note,last_row(location) as location , last_row(groupid) as groupid from gas.weather;
+    </select>
+
+    <update id="dropDB">
+        drop
+        database if exists gas
+    </update>
+
+    <update id="createDB">
+        create
+        database if not exists gas
+    </update>
+
+    <update id="createSuperTable">
+        create table if not exists gas.varvalue
+        (
+            ts
+            timestamp,
+            id
+            nchar(64),
+            vvalue
+            float
+        ) tags
+        (location nchar(64), groupId int)
+    </update>
+
+    <update id="createTable" parameterType="com.taosdata.example.springbootdemo.domain.Weather">
+        create table if not exists gas.t#{groupId} using gas.weather tags
+        (
+            #{location},
+            #{groupId}
+        )
+    </update>
+
+    <select id="select" resultMap="BaseResultMap">
+        select * from gas.weather order by ts desc
+    </select>
+
+<!--    <insert id="insert" parameterType="com.taosdata.example.springbootdemo.domain.Weather">-->
+<!--        insert into test.t#{groupId} (ts, temperature, humidity, note, bytes)-->
+<!--        values (#{ts}, ${temperature}, ${humidity}, #{note}, #{bytes})-->
+<!--    </insert>-->
+
+    <insert id="insert">
+        insert into gas.${tableName} using gas.varvalue  (groupId) TAGS (2)
+        (ts, id, vvalue)
+        values (#{varValue.ts}, #{varValue.id}, #{varValue.vvalue})
+    </insert>
+
+    <insert id="insertAll">
+        insert into gas.${varValue.vid} using gas.varvalue  (groupId) TAGS (2)
+        (ts, id, vvalue)
+        values (#{varValue.ts}, #{varValue.id}, #{varValue.vvalue})
+    </insert>
+
+
+    <select id="getSubTables" resultType="String">
+        select tbname
+        from gas.weather
+    </select>
+
+    <select id="count" resultType="int">
+        select count(*)
+        from gas.weather
+    </select>
+
+    <resultMap id="avgResultSet" type="com.taosdata.example.springbootdemo.domain.Weather">
+        <id column="ts" jdbcType="TIMESTAMP" property="ts"/>
+        <result column="avg(temperature)" jdbcType="FLOAT" property="temperature"/>
+        <result column="avg(humidity)" jdbcType="FLOAT" property="humidity"/>
+    </resultMap>
+
+    <select id="avg" resultMap="avgResultSet">
+        select avg(temperature), avg(humidity)
+        from gas.weather interval(1m)
+    </select>
+
+    <select id="testTable" resultMap="BaseResultMap">
+        select * from ${tableName}
+    </select>
+
+    <select id="query" resultMap="BaseResultMap">
+        select *, '${vid}' as vid from gas.${vid}
+        where ts &gt;=#{startTime} and ts &lt;=#{endTime}
+        order by ts desc
+    </select>
+</mapper>
