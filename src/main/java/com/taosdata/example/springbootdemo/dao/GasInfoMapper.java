@@ -5,6 +5,7 @@ import com.taosdata.example.springbootdemo.domain.GasInfo;
 import com.taosdata.example.springbootdemo.domain.VarValue;
 import com.taosdata.example.springbootdemo.domain.Weather;
 import com.taosdata.example.springbootdemo.request.RequestBaseParam;
+import org.apache.ibatis.annotations.InsertProvider;
 import org.apache.ibatis.annotations.Mapper;
 import org.apache.ibatis.annotations.Param;
 import org.springframework.web.bind.annotation.RequestParam;
@@ -24,4 +25,8 @@ public interface GasInfoMapper {
     void createSuperTable();
 
     List<GasInfo> selectListLimit(@Param("params") RequestBaseParam params);
+
+    @InsertProvider(type = GasInfoProvider.class, method = "insertBatch")
+    void insertBatch(@Param("list") List<GasInfo> list);
+
 }

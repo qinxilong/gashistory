@@ -106,5 +106,15 @@ public class GasInfoController {
         return ApiResponse.success();
     }
 
+    @GetMapping("/gasInfo/batchInsert")
+    public ApiResponse batchInsert() {
+        try {
+            gasInfoService.batchInsert();
+        }catch (Exception e){
+            return ApiResponse.error(500,"初始化燃气历史数据超级表失败");
+        }
+        return ApiResponse.success();
+    }
+
 
 }

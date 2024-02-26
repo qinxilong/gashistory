@@ -84,5 +84,28 @@
         (location nchar(64), groupId int)
     </update>
 
+    <insert id="batchInsert" parameterType="java.util.List">
+        <foreach collection="list" item="gasInfo" separator=",">
+            INSERT INTO gas.${gasInfo.deviceId} using gas.gasinfo (groupId) TAGS (2)
+            (ts, id, deviceid, roomid, gvalue,position,status,reporttime,number,workshop,host,channel,gastype)
+            VALUES
+            (
+            #{gasInfo.ts},
+            #{gasInfo.id},
+            #{gasInfo.deviceId},
+            #{gasInfo.roomId},
+            #{gasInfo.gValue},
+            #{gasInfo.position},
+            #{gasInfo.status},
+            #{gasInfo.reportTime},
+            #{gasInfo.number},
+            #{gasInfo.workShop},
+            #{gasInfo.host},
+            #{gasInfo.channel},
+            #{gasInfo.gasType}
+            )
+        </foreach>
+    </insert>
+
 
 </mapper>

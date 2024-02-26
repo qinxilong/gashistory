@@ -1,5 +1,6 @@
 package com.taosdata.example.springbootdemo.service;
 
+import com.fasterxml.jackson.annotation.JsonFormat;
 import com.taosdata.example.springbootdemo.constant.CommonConstant;
 import com.taosdata.example.springbootdemo.dao.GasInfoMapper;
 import com.taosdata.example.springbootdemo.domain.ApiResponse;
@@ -69,7 +70,7 @@ public class GasInfoService {
         //if(deviceIdList!=null&&deviceIdList.size()==0){
         //    init();
         //}
-        System.out.println(gasInfo);
+//        System.out.println(gasInfo);
         if(gasInfo!=null){
             add(gasInfo);//新增历史数据到td中
         }else{
@@ -192,5 +193,43 @@ public class GasInfoService {
 
     public List<GasInfo> selectListLimit(RequestBaseParam params) {
         return gasInfoMapper.selectListLimit(params);
+    }
+
+    public void batchInsert() {
+        ArrayList<GasInfo> list = new ArrayList<>();
+        GasInfo gasInfo1 = new GasInfo();
+        gasInfo1.setId("100");
+        gasInfo1.setDeviceId("dev01");
+        gasInfo1.setRoomId("room01");
+        gasInfo1.setGValue(10F);
+        gasInfo1.setReportTime(new Timestamp(new Date().getTime()));
+        gasInfo1.setPosition("position01");
+        gasInfo1.setStatus("normal");
+        gasInfo1.setNumber("1");
+        gasInfo1.setWorkShop("ws1");
+        gasInfo1.setHost("localhost");
+        gasInfo1.setChannel("c1");
+        gasInfo1.setGasType("co");
+        gasInfo1.setExceptStartTime(new Timestamp(new Date().getTime()));
+
+
+        GasInfo gasInfo2 = new GasInfo();
+        gasInfo2.setId("100");
+        gasInfo2.setDeviceId("dev02");
+        gasInfo2.setRoomId("room02");
+        gasInfo2.setGValue(20F);
+        gasInfo2.setReportTime(new Timestamp(new Date().getTime()));
+        gasInfo2.setPosition("position02");
+        gasInfo2.setStatus("normal2");
+        gasInfo2.setNumber("2");
+        gasInfo2.setWorkShop("ws2");
+        gasInfo2.setHost("localhost2");
+        gasInfo2.setChannel("c2");
+        gasInfo2.setGasType("co2");
+        gasInfo2.setExceptStartTime(new Timestamp(new Date().getTime()));
+
+        list.add(gasInfo1);
+        list.add(gasInfo2);
+        gasInfoMapper.insertBatch(list);
     }
 }

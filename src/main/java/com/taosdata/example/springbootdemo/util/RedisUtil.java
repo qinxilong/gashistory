@@ -5,10 +5,7 @@ import org.springframework.data.redis.core.RedisTemplate;
 import org.springframework.stereotype.Component;
 import org.springframework.util.CollectionUtils;
 
-import java.util.Collection;
-import java.util.List;
-import java.util.Map;
-import java.util.Set;
+import java.util.*;
 import java.util.concurrent.TimeUnit;
 
 /**
@@ -624,4 +621,18 @@ public class RedisUtil {
         redisTemplate.convertAndSend(channel, message);
     }
 
+    /**
+     * 模糊查询获取key值
+     *
+     * @param pattern
+     * @return
+     */
+    public List<String> fuzzysearchKeys(String pattern) {
+        Set<String> keys = redisTemplate.keys(pattern);
+        return new ArrayList<>(keys);
+    }
+//    List<String> keys = fuzzysearchKeys("user:*");
+//    for(String key : keys){
+//        System.out.println("Key:" + key + ",Value:" + redisTemplate.opsForValue().get(key));
+//    }
 }
