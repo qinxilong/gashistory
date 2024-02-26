@@ -199,7 +199,7 @@ public class GasInfoService {
         ArrayList<GasInfo> list = new ArrayList<>();
         GasInfo gasInfo1 = new GasInfo();
         gasInfo1.setId("100");
-        gasInfo1.setDeviceId("dev01");
+        gasInfo1.setDeviceId("dev010");
         gasInfo1.setRoomId("room01");
         gasInfo1.setGValue(10F);
         gasInfo1.setReportTime(new Timestamp(new Date().getTime()));
@@ -215,7 +215,7 @@ public class GasInfoService {
 
         GasInfo gasInfo2 = new GasInfo();
         gasInfo2.setId("100");
-        gasInfo2.setDeviceId("dev02");
+        gasInfo2.setDeviceId("dev020");
         gasInfo2.setRoomId("room02");
         gasInfo2.setGValue(20F);
         gasInfo2.setReportTime(new Timestamp(new Date().getTime()));

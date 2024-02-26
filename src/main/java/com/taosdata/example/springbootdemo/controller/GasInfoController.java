@@ -106,7 +106,7 @@ public class GasInfoController {
         return ApiResponse.success();
     }
 
-    @GetMapping("/gasInfo/batchInsert")
+    @PostMapping("/gasInfo/batchInsert")
     public ApiResponse batchInsert() {
         try {
             gasInfoService.batchInsert();
