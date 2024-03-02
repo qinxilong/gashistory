@@ -21,6 +21,7 @@ import javax.annotation.PostConstruct;
 import javax.annotation.Resource;
 import java.sql.Timestamp;
 import java.util.*;
+import java.util.concurrent.*;
 import java.util.stream.Collectors;
 
 @Service
@@ -31,6 +32,13 @@ public class GasInfoService {
     private GasClient gasClient;
     @Resource
     private RedisUtil redisUtil;
+
+    private  ConcurrentSkipListSet<GasInfo> gasInfoAddList = new ConcurrentSkipListSet<>();//线程安全
+
+    private ExecutorService cachedThreadPool = Executors.newCachedThreadPool();
+
+    private ScheduledExecutorService scheduledThreadPool = Executors.newScheduledThreadPool(1);
+
 
     private List<String> deviceIdList = new ArrayList<String>();
 //    private Map<String,DeviceInfo> deviceInfoMap = new HashMap<String,DeviceInfo>();
@@ -55,12 +63,44 @@ public class GasInfoService {
             System.out.println(e);
         }
 
+        //开启一个定时线程(5秒插入一次数据)
+        scheduledThreadPool.scheduleAtFixedRate(() -> {
+            System.out.println("Scheduled task running at: " + new Date());
+            List<GasInfo> batchDataList = new ArrayList<>(gasInfoAddList);
+            gasInfoAddList.clear();
+            if(batchDataList!=null&&batchDataList.size()>0){
+                gasInfoMapper.insertBatch(batchDataList);
+            }
+        }, 0, 5, TimeUnit.SECONDS);
+
     }
 
     public void add(GasInfo gasInfo){
         //gasInfoMapper.insert(gasInfo);
         gasInfoMapper.insertGasInfo(gasInfo);
     }
+
+    /**
+     * 批量插入数据
+     * @param gasInfo
+     */
+    public void addGasInfoList(GasInfo gasInfo){
+        gasInfoAddList.add(gasInfo);
+//        if(gasInfoAddList.size()==1000){
+//            List<GasInfo> batchDataList = new ArrayList<>(gasInfoAddList);
+//            gasInfoAddList.clear();
+////            Runnable chitChatStreamTask = () -> {
+////                gasInfoMapper.insertBatch(batchDataList);
+////            };
+////            cachedThreadPool.execute(chitChatStreamTask);
+//            cachedThreadPool.execute(() -> {
+//                gasInfoMapper.insertBatch(batchDataList);
+//            });
+//        }
+
+    }
+
+
 
     public List<GasInfo> selectList(RequestBaseParam params){
         return gasInfoMapper.selectList(params);
@@ -72,7 +112,8 @@ public class GasInfoService {
         //}
 //        System.out.println(gasInfo);
         if(gasInfo!=null){
-            add(gasInfo);//新增历史数据到td中
+//            add(gasInfo);//新增历史数据到td中
+            addGasInfoList(gasInfo);//批操作
         }else{
             return;
         }
