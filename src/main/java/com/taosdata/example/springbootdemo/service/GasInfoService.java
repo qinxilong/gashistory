@@ -33,7 +33,8 @@ public class GasInfoService {
     @Resource
     private RedisUtil redisUtil;
 
-    private  ConcurrentSkipListSet<GasInfo> gasInfoAddList = new ConcurrentSkipListSet<>();//线程安全
+//    private  ConcurrentSkipListSet<GasInfo> gasInfoAddList = new ConcurrentSkipListSet<>();//线程安全
+    private  CopyOnWriteArrayList<GasInfo> gasInfoAddList = new CopyOnWriteArrayList<>();//线程安全
 
     private ExecutorService cachedThreadPool = Executors.newCachedThreadPool();
 
@@ -69,9 +70,10 @@ public class GasInfoService {
             List<GasInfo> batchDataList = new ArrayList<>(gasInfoAddList);
             gasInfoAddList.clear();
             if(batchDataList!=null&&batchDataList.size()>0){
+                System.out.println("批量插入数据" + batchDataList.size() + "条");
                 gasInfoMapper.insertBatch(batchDataList);
             }
-        }, 0, 5, TimeUnit.SECONDS);
+        }, 0, 20, TimeUnit.SECONDS);
 
     }
 
