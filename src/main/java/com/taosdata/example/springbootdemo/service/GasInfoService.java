@@ -1,5 +1,6 @@
 package com.taosdata.example.springbootdemo.service;
 
+import com.alibaba.fastjson.JSONObject;
 import com.fasterxml.jackson.annotation.JsonFormat;
 import com.taosdata.example.springbootdemo.constant.CommonConstant;
 import com.taosdata.example.springbootdemo.dao.GasInfoMapper;
@@ -120,7 +121,8 @@ public class GasInfoService {
             return;
         }
         DeviceInfo deviceInfo = new DeviceInfo(gasInfo);
-        redisUtil.set(GlobalConstants.DEVICE_INFO_KEY + gasInfo.getDeviceId(),deviceInfo);
+        redisUtil.set(GlobalConstants.DEVICE_INFO_KEY + gasInfo.getDeviceId(), JSONObject.toJSONString(deviceInfo));
+
         if(!deviceIdList.contains(gasInfo.getDeviceId())){//当前设备标没有设备信息
 //            DeviceInfo deviceInfo = new DeviceInfo(gasInfo.getDeviceId(),gasInfo.getRoomId(),"一氧化碳",gasInfo.getPosition(),gasInfo.getStatus(),new Date( gasInfo.getReportTime().getTime()));
 //            DeviceInfo deviceInfo = new DeviceInfo(gasInfo);
@@ -131,7 +133,7 @@ public class GasInfoService {
                     deviceIdList.add(deviceInfo.getDeviceId());
                 }
             }
-            redisUtil.set(GlobalConstants.DEVICE_STATUS_KEY + gasInfo.getDeviceId(),gasInfo.getStatus());
+            redisUtil.set(GlobalConstants.DEVICE_STATUS_KEY + gasInfo.getDeviceId(),gasInfo.getStatus(),0);
         }else {
             if(!redisUtil.hasKey(GlobalConstants.DEVICE_STATUS_KEY + gasInfo.getDeviceId())){//redis没有缓存设备状态
                 //更新设备信息（设备状态和时间）
@@ -140,8 +142,11 @@ public class GasInfoService {
                 if (response.getCode() == 200) {
                     System.out.println("设备状态信息更新成功");
                 }
+            }else {
+                System.out.println("设备信息已经缓存");
+
             }
-            redisUtil.set(GlobalConstants.DEVICE_STATUS_KEY + gasInfo.getDeviceId(),gasInfo.getStatus());
+            redisUtil.set(GlobalConstants.DEVICE_STATUS_KEY + gasInfo.getDeviceId(),gasInfo.getStatus(),0);
         }
        /* if(!gasInfo.getStatus().equals(CommonConstant.NORMAL)){//状态异常
             System.out.println("当前状态："+gasInfo.getStatus());
